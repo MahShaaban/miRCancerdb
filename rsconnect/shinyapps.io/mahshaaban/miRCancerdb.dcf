@@ -1,0 +1,13 @@
+name: miRCancerdb
+title: miRCancerdb
+username:
+account: mahshaaban
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 209795
+bundleId: 963251
+url: https://mahshaaban.shinyapps.io/miRCancerdb/
+when: 1504253056.01257
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: makefile|README.md|manuscript/add_files/manuscript_code.Rmd|manuscript/add_files/table2.tex|manuscript/figures/figure1.png|manuscript/figures/figure2.png|manuscript/figures/figure3.png|R/build_functions.R|R/build_script.R
