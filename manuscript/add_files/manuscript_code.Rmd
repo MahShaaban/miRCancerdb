@@ -1,0 +1,93 @@
+---
+title: "Manuscript code"
+subtitle: "A reproducible code to generate data and figures in miRCancer manuscript"
+author: "Mahmoud Shaaban"
+date: "8/31/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = FALSE, message = FALSE, eval = FALSE)
+```
+
+# Overview
+
+# load required libraries
+```{r required_libraries}
+library(RSQLite)
+library(dplyr)
+library(dbplyr)
+library(tidyverse)
+library(xtable)
+library(cowplot)
+```
+
+```{r connect_db}
+db <- dbConnect(SQLite(), 'miRCancer.db')
+```
+
+```{r fig3a_data}
+dat <- db %>%
+  tbl('cor_rnaseq') %>%
+  dplyr::select(mirna_base, feature, c('ACC', 'BLCA')) %>%
+  filter(mirna_base %in% c('hsa-let-7b', 'hsa-let-7c')) %>%
+  collect %>%
+  gather(study, cor, -mirna_base, -feature) %>%
+  mutate(cor = as.numeric(cor)/100) %>%
+  na.omit %>%
+  group_by(study, mirna_base) %>%
+  arrange(desc(abs(cor))) %>%
+  slice(1:5)
+```
+
+```{r write_table}
+print(xtable(dat,
+             caption = 'Table view from a miRCancer query use case.',
+             label = 'table2'),
+      include.rownames = FALSE, file = 'table2.tex')
+```
+
+```{r fig3a}
+fig3a <- dat %>%
+  mutate(color = ifelse(cor < 0, 'Negative', 'Positive'),
+       size = abs(cor)) %>%
+  ggplot(aes(x = '', y = feature, color = color, size = size)) +
+  geom_point(alpha = .8) +
+  facet_wrap(study~mirna_base, nrow = 1) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        legend.position = 'top',
+        legend.direction = 'horizontal', 
+        legend.box = 'vertical',
+        legend.spacing.y = unit(.05, 'cm')) +
+  labs(x = '', y = '')
+```
+
+```{r fig3b_data}
+dat2 <- db %>%
+  tbl('profiles') %>%
+  filter(mirna_base %in% c('hsa-let-7b', 'hsa-let-7c') & study %in% c('ACC', 'BLCA')) %>%
+  collect
+```
+
+```{r fig3b}
+fig3b <- dat2 %>%
+    ggplot(aes(x = mirna_base, y =log(count))) +
+    geom_jitter(width = .1, color = 'gray', alpha = .7) +
+    facet_wrap(~study, ncol = 1) +
+    theme_light() +
+    labs(x = '', y = 'Log2 (count + 1)')
+```
+
+```{r save_fig3}
+plot_grid(fig3a, fig3b,
+          labels = 'AUTO',
+          label_fontface = 'plain',
+          scale = .9)
+ggsave('manuscript/figures/figure3.png', dpi = 300, width = 300, units = 'mm')
+```
+
+```{r}
+dbDisconnect(db)
+```
+

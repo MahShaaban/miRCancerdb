@@ -1,0 +1,11 @@
+name: miRCancer
+title: miRCancer
+account: mahshaaban
+server: shinyapps.io
+appId: 201442
+bundleId: 924497
+url: https://mahshaaban.shinyapps.io/miRCancer/
+when: 1501675383.91266
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: makefile|R/build_functions.R|R/build_script.R
