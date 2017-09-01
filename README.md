@@ -1,9 +1,9 @@
-# miRCancer  
+# miRCancerdb  
 A database for microRNA-gene/protein correlation in cancer.  
-A web interactive interface for this database is available [here](https://mahshaaban.shinyapps.io/miRCancer/)
+A web interactive interface for this database is available [here](https://mahshaaban.shinyapps.io/miRCancerdb/)
 
 # Overview  
-miRCancer is database of expression correlation of expression of microRNAs and genes/proteins.
+miRCancerdb is database of expression correlation of expression of microRNAs and genes/proteins.
 The web interface provides an easy access to the database without having to write any code.
 Among other features, users can search, choose, visualize and downlaod the particular subsets of the data.  
 
@@ -18,12 +18,12 @@ An SQLite database were build using these corelations. In addition, expression p
 microRNA targets data were obtained from [targetscan.Hs.eg.db](http://www.bioconductor.org/packages/devel/data/annotation/html/targetscan.Hs.eg.db.html) [Bioconductor](http://bioconductor.org) package and added to the database.
 
 # Installation  
-Clone or download this repository, navigate to the miRCancer directory and run make to build the database from scratch and
+Clone or download this repository, navigate to the miRCancerdb directory and run make to build the database from scratch and
 launch a shiny browser application.
 
 ```
-git clone https://github.com/MahShaaban/miRCancer
-cd miRCancer
+git clone https://github.com/MahShaaban/miRCancerdb
+cd miRCancerdb
 make
 ```
 
