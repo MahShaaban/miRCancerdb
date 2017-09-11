@@ -19,7 +19,7 @@ miRBase <- readLines('www/miRBase.txt')
 ui <- navbarPage(title = '',
                  tabPanel('Main',
                           sidebarPanel(tags$h1('miRCancerdb'), 
-                                       tags$p('miRCancerdb is a free easy-touse database of microRNA-gene/protein expression correlation in cancer.
+                                       tags$p('miRCancerdb is a free easy-to-use database of microRNA-gene/protein expression correlation in cancer.
                                               It was built mainly based on', tags$a(href = 'https://cancergenome.nih.gov', 'TCGA'),
                                               'and', tags$a(href='http://www.targetscan.org', 'TargetScan'),'data.'),
                                        tags$hr(),
