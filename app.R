@@ -220,7 +220,7 @@ server <- function(input, output, session) {
   
     # make data.frame with correlation data
     ## default table and query options
-    tab <- 'cor_rnaseq'
+    tab <- 'cor_mir'
     if(input$expression == 'Protein') 
       tab <- 'cor_rppa'
     
@@ -404,7 +404,7 @@ server <- function(input, output, session) {
 
     # make data.frame with correlation data
     ## default table and optional query options
-    tab <- 'cor_rnaseq'
+    tab <- 'cor_mir'
     
     if(input$expression == 'Protein')
       tab <- 'cor_rppa'

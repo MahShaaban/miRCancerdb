@@ -1,0 +1,393 @@
+
+R version 3.4.2 (2017-09-28) -- "Short Summer"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> tictoc::tic()
+> library(sqlome)
+
+> 
+> library(RSQLite)
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(tidyr)
+> library(stringr)
+> library(data.table)
+
+Attaching package: ‘data.table’
+
+The following objects are masked from ‘package:dplyr’:
+
+    between, first, last
+
+> library(purrr)
+
+Attaching package: ‘purrr’
+
+The following object is masked from ‘package:data.table’:
+
+    transpose
+
+> library(readr)
+> 
+> library(RTCGA)
+Welcome to the RTCGA (version: 1.8.0).
+> library(RTCGA.rnaseq)
+> library(RTCGA.miRNASeq)
+> library(RTCGA.RPPA)
+> 
+> # get the the TCGA cohorts with all three assays
+> cohorts <- as.character(sqlome_info()$Cohort)
+> 
+> # open a connection to a db
+> db <- dbConnect(SQLite(), 'miRCancer.db')
+> 
+> # microRNA gene correlaitons
+> ## make cor_mir table
+> ### calculate correlations
+> cat('1: Calculating microRNA-gene correlations.\n')
+1: Calculating microRNA-gene correlations.
+> 
+> df <- map(cohorts[-20], function(x) {
++     # make names of RTCGA data.frames
++     mi <- paste(x, 'miRNASeq', sep = '.')
++     m <- paste(x, 'rnaseq', sep = '.')
++ 
++     # read data.frames
++     mi <- get(mi)
++     m <- get(m)
++ 
++     # tidy data.frames
++     mi <- mirna_tidy(mi)
++     m <- mrna_tidy(m)
++ 
++     # calcualte correlations in a tidy data.table
++     corr <- cor_make(mi, m, x, tidy = TRUE)
++     corr <- as.data.table(corr)
++ 
++     # print progress
++     cat(paste('microRNA-gene correlation for', x, 'is done.\n'))
++ 
++     # return tidy data.table
++     return(corr)
++ })
+microRNA-gene correlation for ACC is done.
+microRNA-gene correlation for BLCA is done.
+microRNA-gene correlation for BRCA is done.
+microRNA-gene correlation for CESC is done.
+microRNA-gene correlation for CHOL is done.
+microRNA-gene correlation for COAD is done.
+microRNA-gene correlation for COADREAD is done.
+microRNA-gene correlation for DLBC is done.
+microRNA-gene correlation for ESCA is done.
+microRNA-gene correlation for GBMLGG is done.
+microRNA-gene correlation for HNSC is done.
+microRNA-gene correlation for KICH is done.
+microRNA-gene correlation for KIPAN is done.
+microRNA-gene correlation for KIRC is done.
+microRNA-gene correlation for KIRP is done.
+microRNA-gene correlation for LGG is done.
+microRNA-gene correlation for LIHC is done.
+microRNA-gene correlation for LUAD is done.
+microRNA-gene correlation for LUSC is done.
+microRNA-gene correlation for OV is done.
+microRNA-gene correlation for PAAD is done.
+microRNA-gene correlation for PCPG is done.
+microRNA-gene correlation for PRAD is done.
+microRNA-gene correlation for READ is done.
+microRNA-gene correlation for SARC is done.
+microRNA-gene correlation for SKCM is done.
+microRNA-gene correlation for STAD is done.
+microRNA-gene correlation for STES is done.
+microRNA-gene correlation for TGCT is done.
+microRNA-gene correlation for THCA is done.
+microRNA-gene correlation for THYM is done.
+microRNA-gene correlation for UCEC is done.
+microRNA-gene correlation for UCS is done.
+microRNA-gene correlation for UVM is done.
+There were 22 warnings (use warnings() to see them)
+> 
+> ### use reduce to merge data.tables
+> cat('2: Merging microRNA-gene correlations.\n')
+2: Merging microRNA-gene correlations.
+> df <- Reduce(function(x, y) merge(x, y, all=TRUE), df)
+> 
+> ### write cor_mir table to connection db
+> cat('3: Writing microRNA-gene correlations.\n')
+3: Writing microRNA-gene correlations.
+> dbWriteTable(db,
++              name = 'cor_mir',
++              df,
++              overwrite = TRUE)
+> ### making index on cor_mir
+> dbSendQuery(db,
++             statement = 'create index idx1 on cor_mir (mirna_base);',
++             overwrite = TRUE)
+<SQLiteResult>
+  SQL  create index idx1 on cor_mir (mirna_base);
+  ROWS Fetched: 0 [complete]
+       Changed: 1
+> 
+> ## make targets for/microRNA-gene mapping
+> cat('4: Extracting microRNA-gene targets.\n')
+4: Extracting microRNA-gene targets.
+> 
+> targets <- list()
+> targets$genes <- get_targets(unique(df$mirna_base), 'gene')
+Joining, by = "name"
+'select()' returned many:1 mapping between keys and columns
+> 
+> # microRNA gene correlaitons
+> ## make cor_rppa table
+> ### calculate correlations
+> cat('5: Calculating microRNA-protein correlations.\n')
+5: Calculating microRNA-protein correlations.
+> 
+> df <- map(cohorts[-20], function(x) {
++     # make names of RTCGA data.frames
++     mi <- paste(x, 'miRNASeq', sep = '.')
++     m <- paste(x, 'RPPA', sep = '.')
++ 
++     # read data.frames
++     mi <- get(mi)
++     m <- get(m)
++ 
++     # tidy data.frames
++     mi <- mirna_tidy(mi)
++     m <- rppa_tidy(m)
++ 
++     # calcualte correlations in a tidy data.table
++     corr <- cor_make(mi, m, x, tidy = TRUE)
++     corr <- as.data.table(corr)
++ 
++     # print progress
++     cat(paste('microRNA-protein correlation for', x, 'is done.\n'))
++ 
++     # return tidy data.table
++     return(corr)
++ })
+microRNA-protein correlation for ACC is done.
+microRNA-protein correlation for BLCA is done.
+microRNA-protein correlation for BRCA is done.
+microRNA-protein correlation for CESC is done.
+microRNA-protein correlation for CHOL is done.
+microRNA-protein correlation for COAD is done.
+microRNA-protein correlation for COADREAD is done.
+microRNA-protein correlation for DLBC is done.
+microRNA-protein correlation for ESCA is done.
+microRNA-protein correlation for GBMLGG is done.
+microRNA-protein correlation for HNSC is done.
+microRNA-protein correlation for KICH is done.
+microRNA-protein correlation for KIPAN is done.
+microRNA-protein correlation for KIRC is done.
+microRNA-protein correlation for KIRP is done.
+microRNA-protein correlation for LGG is done.
+microRNA-protein correlation for LIHC is done.
+microRNA-protein correlation for LUAD is done.
+microRNA-protein correlation for LUSC is done.
+microRNA-protein correlation for OV is done.
+microRNA-protein correlation for PAAD is done.
+microRNA-protein correlation for PCPG is done.
+microRNA-protein correlation for PRAD is done.
+microRNA-protein correlation for READ is done.
+microRNA-protein correlation for SARC is done.
+microRNA-protein correlation for SKCM is done.
+microRNA-protein correlation for STAD is done.
+microRNA-protein correlation for STES is done.
+microRNA-protein correlation for TGCT is done.
+microRNA-protein correlation for THCA is done.
+microRNA-protein correlation for THYM is done.
+microRNA-protein correlation for UCEC is done.
+microRNA-protein correlation for UCS is done.
+microRNA-protein correlation for UVM is done.
+There were 33 warnings (use warnings() to see them)
+> 
+> ### use reduce to merge data.tables
+> cat('6: Merging microRNA-protein correlations.\n')
+6: Merging microRNA-protein correlations.
+> 
+> df <- Reduce(function(x, y) merge(x, y, all=TRUE), df)
+> 
+> ### write cor_rppa table to connection db
+> cat('7: Writing microRNA-protein correlations.\n')
+7: Writing microRNA-protein correlations.
+> 
+> dbWriteTable(db,
++              name = 'cor_rppa',
++              df,
++              overwrite = TRUE)
+Warning message:
+Closing open result set, pending rows 
+> 
+> ### making index on cor_rppa
+> dbSendQuery(db,
++             statement = 'create index idx2 on cor_rppa (mirna_base);',
++             overwrite = TRUE)
+<SQLiteResult>
+  SQL  create index idx2 on cor_rppa (mirna_base);
+  ROWS Fetched: 0 [complete]
+       Changed: 1
+> 
+> ## make targets for/microRNA-gene mapping
+> cat('8: Extracting microRNA-gene targets.\n')
+8: Extracting microRNA-gene targets.
+> targets$protein <- get_targets(unique(df$mirna_base), 'protein')
+Joining, by = "name"
+'select()' returned many:1 mapping between keys and columns
+Parsed with column specification:
+cols(
+  ab_id = col_character(),
+  source = col_character(),
+  cat_num = col_character(),
+  gene_id = col_character()
+)
+> 
+> # merge targets tables
+> cat('9: Merging microRNA gene and protein targets.\n')
+9: Merging microRNA gene and protein targets.
+> 
+> targets <- bind_rows(targets, .id = 'feature_type')
+> 
+> # write targets table
+> cat('10: Wrtigin microRNA gene and protein targets.\n')
+10: Wrtigin microRNA gene and protein targets.
+> 
+> dbWriteTable(db,
++              name = 'targets',
++              targets,
++              overwrite = TRUE)
+Warning message:
+Closing open result set, pending rows 
+> 
+> ### making index on cor_mir
+> dbSendQuery(db,
++             statement = 'create index idx3 on targets (mirna_base);',
++             overwrite = TRUE)
+<SQLiteResult>
+  SQL  create index idx3 on targets (mirna_base);
+  ROWS Fetched: 0 [complete]
+       Changed: 1
+> 
+> # write miRNASeq profiles
+> cat('11: Extracting microRNA profiles.\n')
+11: Extracting microRNA profiles.
+> 
+> df <- map(cohorts[-20], function(x) {
++     # make names of RTCGA data.frames
++     mi <- paste(x, 'miRNASeq', sep = '.')
++ 
++     # read data.frames
++     mi <- get(mi)
++ 
++     # tidy data.frames
++     mi <- mirna_tidy(mi)
++     mi <- cbind(mirna_base = rownames(mi), as.data.frame(mi))
++     mi <- gather(mi, bcr, count, -mirna_base)[, -2]
++     mi <- as.data.table(mi)
++ 
++     # print progress
++     cat(paste('microRNAs profiles for', x, 'is done.\n'))
++ 
++     # return tidy data.table
++     return(mi)
++ })
+microRNAs profiles for ACC is done.
+microRNAs profiles for BLCA is done.
+microRNAs profiles for BRCA is done.
+microRNAs profiles for CESC is done.
+microRNAs profiles for CHOL is done.
+microRNAs profiles for COAD is done.
+microRNAs profiles for COADREAD is done.
+microRNAs profiles for DLBC is done.
+microRNAs profiles for ESCA is done.
+microRNAs profiles for GBMLGG is done.
+microRNAs profiles for HNSC is done.
+microRNAs profiles for KICH is done.
+microRNAs profiles for KIPAN is done.
+microRNAs profiles for KIRC is done.
+microRNAs profiles for KIRP is done.
+microRNAs profiles for LGG is done.
+microRNAs profiles for LIHC is done.
+microRNAs profiles for LUAD is done.
+microRNAs profiles for LUSC is done.
+microRNAs profiles for OV is done.
+microRNAs profiles for PAAD is done.
+microRNAs profiles for PCPG is done.
+microRNAs profiles for PRAD is done.
+microRNAs profiles for READ is done.
+microRNAs profiles for SARC is done.
+microRNAs profiles for SKCM is done.
+microRNAs profiles for STAD is done.
+microRNAs profiles for STES is done.
+microRNAs profiles for TGCT is done.
+microRNAs profiles for THCA is done.
+microRNAs profiles for THYM is done.
+microRNAs profiles for UCEC is done.
+microRNAs profiles for UCS is done.
+microRNAs profiles for UVM is done.
+> 
+> ### use reduce to merge data.tables
+> cat('12: Merging microRNA profiles.\n')
+12: Merging microRNA profiles.
+> 
+> names(df) <- cohorts[-20]
+> df <- bind_rows(df, .id = 'study')
+There were 31 warnings (use warnings() to see them)
+> 
+> # write profiles table
+> cat('13: Writing microRNA profiles.\n')
+13: Writing microRNA profiles.
+> 
+> dbWriteTable(db,
++              name = 'profiles',
++              df,
++              overwrite = TRUE)
+Warning message:
+Closing open result set, pending rows 
+> 
+> ### making index on profiles
+> dbSendQuery(db,
++             statement = 'create index idx4 on profiles (mirna_base);',
++             overwrite = TRUE)
+<SQLiteResult>
+  SQL  create index idx4 on profiles (mirna_base);
+  ROWS Fetched: 0 [complete]
+       Changed: 1
+> 
+> # disconnect from the db file
+> dbDisconnect(db)
+Warning message:
+In rsqlite_disconnect(conn@ptr) :
+  There are 1 result in use. The connection will be released when they are closed
+> tictoc::toc()
+1589.422 sec elapsed
+> 
+> proc.time()
+    user   system  elapsed 
+ 705.959  566.385 1589.679 
