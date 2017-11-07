@@ -3,3 +3,8 @@
 .RData
 .Ruserdata
 miRCancer.db
+.Rhistory
+.gitignore
+miRCancerdb.Rproj
+rsconnect/
+miRCancer.db.gz
