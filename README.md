@@ -1,6 +1,7 @@
 # miRCancerdb  
 A database for microRNA-gene/protein correlation in cancer.  
 A web interactive interface for this database is available [here](https://mahshaaban.shinyapps.io/miRCancerdb/)
+A compressed built database file is available here [here](https://figshare.com/articles/miRCancer_db_gz/5576329
 
 # Overview  
 miRCancerdb is database of expression correlation of expression of microRNAs and genes/proteins.
@@ -18,8 +19,14 @@ An SQLite database were build using these corelations. In addition, expression p
 microRNA targets data were obtained from [targetscan.Hs.eg.db](http://www.bioconductor.org/packages/devel/data/annotation/html/targetscan.Hs.eg.db.html) [Bioconductor](http://bioconductor.org) package and added to the database.
 
 # Installation  
+A collection of funtions needed to build the database is provided as an R package called `sqlome`. The package is available on github and can be installed using:
+
+```r
+devtools::install_github('MahShaaban/sqlome')
+```
+
 Clone or download this repository, navigate to the miRCancerdb directory and run make to build the database from scratch and
-launch a shiny browser application.
+launch a shiny browser application. 
 
 ```
 git clone https://github.com/MahShaaban/miRCancerdb
@@ -27,7 +34,7 @@ cd miRCancerdb
 make
 ```
 
-Indeed, the same could be achieved through Rstudio and the sqlite db file can be accessed using DBI library in R.
+Indeed, the same can be achieved through Rstudio and the sqlite db file can be accessed using DBI library in R.
 
 ## More  
 Citation: <manuscript>  
