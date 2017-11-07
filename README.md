@@ -1,7 +1,10 @@
+![version](https://img.shields.io/badge/version-v1.0-blue.svg)
+[![status](https://img.shields.io/badge/shinyapps.io-running-green.svg)](https://mahshaaban.shinyapps.io/miRCancerdb/)  
+
 # miRCancerdb  
 A database for microRNA-gene/protein correlation in cancer.  
-A web interactive interface for this database is available [here](https://mahshaaban.shinyapps.io/miRCancerdb/)
-A compressed built database file is available here [here](https://figshare.com/articles/miRCancer_db_gz/5576329
+A web interactive interface for this database is available [here](https://mahshaaban.shinyapps.io/miRCancerdb/)  
+A compressed built database file is available here [here](https://figshare.com/articles/miRCancer_db_gz/5576329)
 
 # Overview  
 miRCancerdb is database of expression correlation of expression of microRNAs and genes/proteins.
